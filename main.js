@@ -24,9 +24,7 @@ const main = sources => {
 const consoleLogDriver = msg$ =>
   msg$.subscribe(msg => console.log(msg))
 
-const drivers = {
+Cycle.run(main, {
   DOM: makeDOMDriver('#app'),
   Log: consoleLogDriver
-}
-
-Cycle.run(main, drivers)
+})
