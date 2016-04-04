@@ -6,25 +6,19 @@ const main = sources => {
   const mouseover$ = sources.DOM
     .select('span')
     .events('mouseover')
-  const sinks = {
+  return {
     DOM: mouseover$
-      .startWith(null)
+      .startWith('')
       .flatMapLatest(() =>
         Rx.Observable.timer(0, 1000)
           .map(i =>
-            h1({style: {background: 'red'}}, [
+            h1({style: {background: 'blue'}}, [
               span(`seconds elapsed ${i}`)
             ]))
       ),
-    Log: Rx.Observable.timer(0, 2000).map(i => 2*i)
   }
-  return sinks
 }
 
-const consoleLogDriver = msg$ =>
-  msg$.subscribe(msg => console.log(msg))
-
 Cycle.run(main, {
-  DOM: makeDOMDriver('#app'),
-  Log: consoleLogDriver
+  DOM: makeDOMDriver('#app')
 })
