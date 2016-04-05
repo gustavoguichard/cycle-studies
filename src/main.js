@@ -1,8 +1,44 @@
 import Rx from 'rx'
 import Cycle from '@cycle/core'
-import {makeHTTPDriver} from '@cycle/http'
-// import {h, makeDOMDriver} from '@cycle/dom'
+// import {makeHTTPDriver} from '@cycle/http'
+import {h, makeDOMDriver} from '@cycle/dom'
 
+const main = sources => {
+  const changeWeight$ = sources.DOM.select('.weight')
+    .events('input').map(ev => ev.target.value)
+  const changeHeight$ = sources.DOM.select('.height')
+    .events('input').map(ev => ev.target.value)
+
+  const state$ = Rx.Observable.combineLatest(
+    changeWeight$.startWith(70),
+    changeHeight$.startWith(170),
+    (weight, height) => {
+      const heightMeters = height * .01
+      const bmi = Math.round(weight / (heightMeters * heightMeters))
+      return { bmi, weight, height }
+    })
+  return {
+    DOM: state$.map(state =>
+      h('div', [
+        h('div', [
+          h('label', `Weight: ${state.weight}kg`),
+          h('input.weight', {type: 'range', min: 40, max: 150, value: state.weight})
+        ]),
+        h('div', [
+          h('label', `Height: ${state.height}cm`),
+          h('input.height', {type: 'range', min: 140, max: 220, value: state.height})
+        ]),
+        h('h2', `BMI is ${state.bmi}`)
+      ])
+    ),
+  }
+}
+
+Cycle.run(main, {
+  DOM: makeDOMDriver('#app'),
+})
+
+/* Http
 const main = sources => {
   const url = 'http://jsonplaceholder.typicode.com/users/1'
   const clickEvent$ = sources.DOM
@@ -33,11 +69,7 @@ const main = sources => {
   }
 }
 
-Cycle.run(main, {
-  DOM: makeDOMDriver('#app'),
-  HTTP: makeHTTPDriver(),
-})
-
+*/
 
 /* Increment, decrement
 const main = sources => {
