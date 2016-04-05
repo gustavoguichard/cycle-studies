@@ -3,42 +3,30 @@ import Cycle from '@cycle/core'
 // import {makeHTTPDriver} from '@cycle/http'
 import {h, makeDOMDriver} from '@cycle/dom'
 
-const intent = DOMSource => {
-  const changeWeight$ = DOMSource.select('.weight')
-    .events('input').map(ev => ev.target.value)
-  const changeHeight$ = DOMSource.select('.height')
-    .events('input').map(ev => ev.target.value)
-  return { changeWeight$, changeHeight$ }
+const intent = DOMSource => DOMSource.select('.slider')
+  .events('input')
+  .map(ev => ev.target.value)
+
+const model = (newValue$, props$) => {
+  const initialValue$ = props$.map(props => props.init).first()
+  const value$ = initialValue$.concat(newValue$)
+  return Rx.Observable.combineLatest(value$, props$, (value, props) => {
+    return { ...props, value }
+  })
 }
 
-const model = (changeWeight$, changeHeight$) =>
-  Rx.Observable.combineLatest(
-    changeWeight$.startWith(70),
-    changeHeight$.startWith(170),
-    (weight, height) => {
-      const heightMeters = height * .01
-      const bmi = Math.round(weight / (heightMeters * heightMeters))
-      return { bmi, weight, height }
-  })
-
-const view = state$ =>
-  state$.map(state =>
-    h('div', [
-      h('div', [
-        h('label', `Weight: ${state.weight}kg`),
-        h('input.weight', {type: 'range', min: 40, max: 150, value: state.weight})
-      ]),
-      h('div', [
-        h('label', `Height: ${state.height}cm`),
-        h('input.height', {type: 'range', min: 140, max: 220, value: state.height})
-      ]),
-      h('h2', `BMI is ${state.bmi}`)
+const view = state$ => {
+  return state$.map(state =>
+    h('.labeled-slider', [
+      h('label.label', `${state.label} ${state.value + state.unit}`),
+      h('input.slider', {type: 'range', ...state})
     ])
   )
+}
 
 const main = sources => {
-  const { changeWeight$, changeHeight$ } = intent(sources.DOM)
-  const state$ = model(changeWeight$, changeHeight$)
+  const change$ = intent(sources.DOM)
+  const state$ = model(change$, sources.props)
   const vtree$ = view(state$)
   return {
     DOM: vtree$,
@@ -47,6 +35,13 @@ const main = sources => {
 
 Cycle.run(main, {
   DOM: makeDOMDriver('#app'),
+  props: () => Rx.Observable.of({
+    label: 'Height',
+    unit: 'cm',
+    min: 140,
+    max: 220,
+    init: 170,
+  })
 })
 
 /* Http
