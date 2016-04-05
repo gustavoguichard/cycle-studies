@@ -24,7 +24,7 @@ const view = state$ => {
   )
 }
 
-const main = sources => {
+const LabeledSlider = sources => {
   const change$ = intent(sources.DOM)
   const state$ = model(change$, sources.props)
   const vtree$ = view(state$)
@@ -33,15 +33,42 @@ const main = sources => {
   }
 }
 
-Cycle.run(main, {
-  DOM: makeDOMDriver('#app'),
-  props: () => Rx.Observable.of({
+const main = sources => {
+  const heightProps$ = Rx.Observable.of({
     label: 'Height',
     unit: 'cm',
     min: 140,
     max: 220,
     init: 170,
   })
+  const heightSinks = LabeledSlider({DOM: sources.DOM.select('.height'), props: heightProps$})
+  const weightProps$ = Rx.Observable.of({
+    label: 'Weight',
+    unit: 'kg',
+    min: 40,
+    max: 150,
+    init: 70,
+  })
+  const weightSinks = LabeledSlider({DOM: sources.DOM.select('.weight'), props: weightProps$})
+  const vtree$ = Rx.Observable.combineLatest(
+    weightSinks.DOM.map(vtree => {
+      vtree.properties.className += ' weight'
+      return vtree
+    }),
+    heightSinks.DOM.map(vtree => {
+      vtree.properties.className += ' height'
+      return vtree
+    }),
+    (weightVTree, heightVTree) =>
+      h('div', [weightVTree, heightVTree])
+  )
+  return {
+    DOM: vtree$,
+  }
+}
+
+Cycle.run(main, {
+  DOM: makeDOMDriver('#app'),
 })
 
 /* Http
