@@ -2,6 +2,7 @@ import Rx from 'rx'
 import Cycle from '@cycle/core'
 // import {makeHTTPDriver} from '@cycle/http'
 import {h, makeDOMDriver} from '@cycle/dom'
+import isolate from '@cycle/isolate'
 
 const intent = DOMSource => DOMSource.select('.slider')
   .events('input')
@@ -32,6 +33,7 @@ const LabeledSlider = sources => {
     DOM: vtree$,
   }
 }
+const LabeledSliderCx = sources => isolate(LabeledSlider)(sources)
 
 const main = sources => {
   const heightProps$ = Rx.Observable.of({
@@ -41,7 +43,6 @@ const main = sources => {
     max: 220,
     init: 170,
   })
-  const heightSinks = LabeledSlider({DOM: sources.DOM.select('.height'), props: heightProps$})
   const weightProps$ = Rx.Observable.of({
     label: 'Weight',
     unit: 'kg',
@@ -49,16 +50,11 @@ const main = sources => {
     max: 150,
     init: 70,
   })
-  const weightSinks = LabeledSlider({DOM: sources.DOM.select('.weight'), props: weightProps$})
+  const heightSinks = LabeledSliderCx({DOM: sources.DOM, props: heightProps$})
+  const weightSinks = LabeledSliderCx({DOM: sources.DOM, props: weightProps$})
   const vtree$ = Rx.Observable.combineLatest(
-    weightSinks.DOM.map(vtree => {
-      vtree.properties.className += ' weight'
-      return vtree
-    }),
-    heightSinks.DOM.map(vtree => {
-      vtree.properties.className += ' height'
-      return vtree
-    }),
+    weightSinks.DOM,
+    heightSinks.DOM,
     (weightVTree, heightVTree) =>
       h('div', [weightVTree, heightVTree])
   )
