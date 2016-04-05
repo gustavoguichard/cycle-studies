@@ -1,7 +1,45 @@
 import Rx from 'rx'
 import Cycle from '@cycle/core'
-import {h, makeDOMDriver} from '@cycle/dom'
+import {makeHTTPDriver} from '@cycle/http'
+// import {h, makeDOMDriver} from '@cycle/dom'
 
+const main = sources => {
+  const url = 'http://jsonplaceholder.typicode.com/users/1'
+  const clickEvent$ = sources.DOM
+    .select('.get-first').events('click')
+  const request$ = clickEvent$.map(() => {
+    return {
+      url,
+      method: 'GET',
+    }
+  })
+  const response$$ = sources.HTTP
+    .filter(response$ => response$.request.url === url)
+
+  const response$ = response$$.switch()
+  const firstUser$ = response$
+    .map(response => response.body)
+    .startWith({})
+  return {
+    DOM: firstUser$.map(firstUser =>
+      h('div', [
+        h('button.get-first', 'Get first user'),
+        h('h1.user-name', firstUser.name),
+        h('h4.user-email', firstUser.email),
+        h('a.user-website', {href: 'google.com'}, firstUser.website)
+      ])
+    ),
+    HTTP: request$,
+  }
+}
+
+Cycle.run(main, {
+  DOM: makeDOMDriver('#app'),
+  HTTP: makeHTTPDriver(),
+})
+
+
+/* Increment, decrement
 const main = sources => {
   const decrementClick$ = sources.DOM
     .select('.decrement').events('click')
@@ -28,9 +66,7 @@ const main = sources => {
   }
 }
 
-Cycle.run(main, {
-  DOM: makeDOMDriver('#app')
-})
+*/
 
 /* Clock
 const main = sources => {

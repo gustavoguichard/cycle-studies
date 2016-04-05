@@ -6,9 +6,10 @@
     "start": "webpack-dev-server --content-base build/"
   },
   "dependencies": {
-    "rx": "4.1.0",
     "@cycle/core": "6.0.3",
-    "@cycle/dom": "9.1.0"
+    "@cycle/dom": "9.1.0",
+    "@cycle/http": "^8.2.2",
+    "rx": "4.1.0"
   },
   "devDependencies": {
     "html-webpack-plugin": "1.6.1",
