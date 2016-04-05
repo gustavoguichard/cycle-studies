@@ -3,34 +3,45 @@ import Cycle from '@cycle/core'
 // import {makeHTTPDriver} from '@cycle/http'
 import {h, makeDOMDriver} from '@cycle/dom'
 
-const main = sources => {
-  const changeWeight$ = sources.DOM.select('.weight')
+const intent = DOMSource => {
+  const changeWeight$ = DOMSource.select('.weight')
     .events('input').map(ev => ev.target.value)
-  const changeHeight$ = sources.DOM.select('.height')
+  const changeHeight$ = DOMSource.select('.height')
     .events('input').map(ev => ev.target.value)
+  return { changeWeight$, changeHeight$ }
+}
 
-  const state$ = Rx.Observable.combineLatest(
+const model = (changeWeight$, changeHeight$) =>
+  Rx.Observable.combineLatest(
     changeWeight$.startWith(70),
     changeHeight$.startWith(170),
     (weight, height) => {
       const heightMeters = height * .01
       const bmi = Math.round(weight / (heightMeters * heightMeters))
       return { bmi, weight, height }
-    })
-  return {
-    DOM: state$.map(state =>
+  })
+
+const view = state$ =>
+  state$.map(state =>
+    h('div', [
       h('div', [
-        h('div', [
-          h('label', `Weight: ${state.weight}kg`),
-          h('input.weight', {type: 'range', min: 40, max: 150, value: state.weight})
-        ]),
-        h('div', [
-          h('label', `Height: ${state.height}cm`),
-          h('input.height', {type: 'range', min: 140, max: 220, value: state.height})
-        ]),
-        h('h2', `BMI is ${state.bmi}`)
-      ])
-    ),
+        h('label', `Weight: ${state.weight}kg`),
+        h('input.weight', {type: 'range', min: 40, max: 150, value: state.weight})
+      ]),
+      h('div', [
+        h('label', `Height: ${state.height}cm`),
+        h('input.height', {type: 'range', min: 140, max: 220, value: state.height})
+      ]),
+      h('h2', `BMI is ${state.bmi}`)
+    ])
+  )
+
+const main = sources => {
+  const { changeWeight$, changeHeight$ } = intent(sources.DOM)
+  const state$ = model(changeWeight$, changeHeight$)
+  const vtree$ = view(state$)
+  return {
+    DOM: vtree$,
   }
 }
 
