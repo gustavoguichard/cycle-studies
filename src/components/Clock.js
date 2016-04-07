@@ -12,7 +12,7 @@ const model = change$ =>
 
 const view = state$ =>
   state$.map(i =>
-    h('h1', {style: {textDecoration: 'line-through'}}, [
+    h('h1', [
       h('span.clock', `seconds elapsed ${i}`)
     ])
   )
