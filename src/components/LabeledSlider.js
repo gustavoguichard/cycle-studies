@@ -2,9 +2,15 @@ import { Observable as Obs } from 'rx'
 import {h} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 
+
+// Intent
+
 const intent = DOMSource => DOMSource.select('.slider')
   .events('input')
   .map(ev => ev.target.value)
+
+
+// Model
 
 const model = (newValue$, props$) => {
   const initialValue$ = props$.map(props => props.init).first()
@@ -13,6 +19,9 @@ const model = (newValue$, props$) => {
     return { ...props, value }
   })
 }
+
+
+// View
 
 const view = state$ =>
   state$.map(state =>

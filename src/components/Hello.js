@@ -1,13 +1,22 @@
 import { Observable as Obs } from 'rx'
 import {h} from '@cycle/dom'
 
+
+// Intent
+
 const intent = DOMSources =>
   DOMSources.select('.field').events('input')
+
+
+// Model
 
 const model = change$ =>
   change$
     .map(ev => ev.target.value)
     .startWith('')
+
+
+// View
 
 const view = name$ =>
   name$.map(name =>

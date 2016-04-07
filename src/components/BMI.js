@@ -2,6 +2,9 @@ import { Observable as Obs } from 'rx'
 import {h} from '@cycle/dom'
 import LabeledSlider from './LabeledSlider'
 
+
+// Model
+
 const model = (weight$, height$) => {
   return Obs.combineLatest(
     weight$, height$,
@@ -11,6 +14,9 @@ const model = (weight$, height$) => {
     }
   )
 }
+
+
+// View
 
 const view = bmi$ => bmi$.map(bmi =>
   h('h2', `BMI is ${bmi}`)

@@ -1,12 +1,18 @@
 import { Observable as Obs } from 'rx'
 import {h} from '@cycle/dom'
 
+
+// Intent
+
 const intent = DOMSources => {
   return {
     incrementClick$: DOMSources.select('.increment').events('click'),
     decrementClick$: DOMSources.select('.decrement').events('click'),
   }
 }
+
+
+// Model
 
 const model = ({ incrementClick$, decrementClick$ }) => {
   const decrementAction$ = decrementClick$.map(ev => -1)
@@ -17,6 +23,9 @@ const model = ({ incrementClick$, decrementClick$ }) => {
     .merge(incrementAction$)
     .scan((prev, curr) => prev + curr)
 }
+
+
+// View
 
 const view = number$ =>
   number$.map(number =>

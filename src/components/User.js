@@ -1,7 +1,12 @@
 import { Observable as Obs } from 'rx'
 import {h} from '@cycle/dom'
 
+// Config
+
 const url = 'http://jsonplaceholder.typicode.com/users/1'
+
+
+// Intent
 
 const intent = sources => {
   return {
@@ -9,6 +14,9 @@ const intent = sources => {
     response$$: sources.HTTP.filter(response$ => response$.request.url === url)
   }
 }
+
+
+// Model
 
 const model = ({ clickEvent$, response$$ }) => {
   const response$ = response$$.switch()
@@ -19,6 +27,9 @@ const model = ({ clickEvent$, response$$ }) => {
     request$: clickEvent$.map(() => ({ url, method: 'GET' })),
   }
 }
+
+
+// View
 
 const view = firstUser$ =>
   firstUser$.map(firstUser =>
